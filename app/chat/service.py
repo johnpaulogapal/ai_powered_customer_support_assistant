@@ -10,7 +10,7 @@ from .tools import (
     complaint,
     escalation,
     hotel_search,
-    flight_search
+    flight_search,
 )
 from .model import ChatResponse
 from typing import Annotated
@@ -27,7 +27,6 @@ TOOL_UI_MAP = {
 
 
 class ChatService:
-
     def __init__(self):
         self.llm = ChatOllama(
             model=os.environ["MODEL"],
@@ -43,30 +42,19 @@ class ChatService:
                 complaint,
                 escalation,
                 hotel_search,
-                flight_search
-            ]
+                flight_search,
+            ],
         )
 
         self.structured_llm = self.llm.with_structured_output(ChatResponse)
 
     def run(self, message: str, thread_id: str):
 
-        system_message = SystemMessage(
-            content="You are a customer support assistant."
-        )
+        system_message = SystemMessage(content="You are a customer support assistant.")
 
         result = self.agent.invoke(
-            {
-                "messages": [
-                    system_message,
-                    HumanMessage(content=message)
-                ]
-            },
-            config={
-                "configurable": {
-                    "thread_id": thread_id
-                }
-            }
+            {"messages": [system_message, HumanMessage(content=message)]},
+            config={"configurable": {"thread_id": thread_id}},
         )
 
         tool_name = None
@@ -82,17 +70,16 @@ class ChatService:
         {final_text}
         """)
 
-        mapping = TOOL_UI_MAP.get(tool_name or "", {
-            "intent": "general",
-            "ui_type": "general_page"
-        })
+        mapping = TOOL_UI_MAP.get(
+            tool_name or "", {"intent": "general", "ui_type": "general_page"}
+        )
 
         return {
             "intent": mapping["intent"],
             "tool_called": tool_name,
             "ui_type": mapping["ui_type"],
             "message": structured.message,
-            "data": structured.data
+            "data": structured.data,
         }
 
 
